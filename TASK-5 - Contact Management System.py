@@ -1,111 +1,112 @@
 # CodSoft Python Internship Task
-# Task Name: Contact Management System
+# Task Name: Contact Management System (Streamlit App)
 # Author: Kaavya B M
 
+import streamlit as st
 
-scontacts = []
+# Initialize contacts list in session state
+if "contacts" not in st.session_state:
+    st.session_state.contacts = []
 
-def show_menu():
-    print("\n--- CONTACT MANAGEMENT SYSTEM ---")
-    print("1. Add Contact")
-    print("2. View Contacts")
-    print("3. Search Contact")
-    print("4. Update Contact")
-    print("5. Delete Contact")
-    print("6. Exit")
+st.title("📇 Contact Management System")
 
-def add_contact():
-    name = input("Enter name: ")
-    phone = input("Enter phone number: ")
-    email = input("Enter email: ")
-    address = input("Enter address: ")
+menu = st.sidebar.selectbox(
+    "Menu",
+    ["Add Contact", "View Contacts", "Search Contact", "Update Contact", "Delete Contact"]
+)
 
-    contact = {
-        "name": name,
-        "phone": phone,
-        "email": email,
-        "address": address
-    }
+# ---------------- ADD CONTACT ----------------
+if menu == "Add Contact":
+    st.subheader("➕ Add New Contact")
 
-    contacts.append(contact)
-    print("Contact added successfully!")
+    name = st.text_input("Name")
+    phone = st.text_input("Phone Number")
+    email = st.text_input("Email")
+    address = st.text_area("Address")
 
-def view_contacts():
-    if not contacts:
-        print("No contacts found.")
-        return
+    if st.button("Add Contact"):
+        if name and phone:
+            st.session_state.contacts.append({
+                "name": name,
+                "phone": phone,
+                "email": email,
+                "address": address
+            })
+            st.success("Contact added successfully!")
+        else:
+            st.warning("Name and Phone Number are required")
 
-    print("\n--- CONTACT LIST ---")
-    for index, contact in enumerate(contacts, start=1):
-        print(f"{index}. {contact['name']} - {contact['phone']}")
+# ---------------- VIEW CONTACTS ----------------
+elif menu == "View Contacts":
+    st.subheader("📋 Contact List")
 
-def search_contact():
-    key = input("Enter name or phone number to search: ").lower()
-    found = False
-
-    for contact in contacts:
-        if key in contact["name"].lower() or key in contact["phone"]:
-            print("\nContact Found:")
-            print(f"Name   : {contact['name']}")
-            print(f"Phone  : {contact['phone']}")
-            print(f"Email  : {contact['email']}")
-            print(f"Address: {contact['address']}")
-            found = True
-
-    if not found:
-        print("No matching contact found.")
-
-def update_contact():
-    view_contacts()
-    try:
-        choice = int(input("Enter contact number to update: "))
-        contact = contacts[choice - 1]
-
-        print("Leave blank to keep existing value")
-
-        name = input(f"New name ({contact['name']}): ") or contact["name"]
-        phone = input(f"New phone ({contact['phone']}): ") or contact["phone"]
-        email = input(f"New email ({contact['email']}): ") or contact["email"]
-        address = input(f"New address ({contact['address']}): ") or contact["address"]
-
-        contact.update({
-            "name": name,
-            "phone": phone,
-            "email": email,
-            "address": address
-        })
-
-        print("Contact updated successfully!")
-
-    except:
-        print("Invalid selection!")
-
-def delete_contact():
-    view_contacts()
-    try:
-        choice = int(input("Enter contact number to delete: "))
-        removed = contacts.pop(choice - 1)
-        print(f"Deleted contact: {removed['name']}")
-    except:
-        print("Invalid selection!")
-
-# Main Program Loop
-while True:
-    show_menu()
-    option = input("Choose an option (1-6): ")
-
-    if option == "1":
-        add_contact()
-    elif option == "2":
-        view_contacts()
-    elif option == "3":
-        search_contact()
-    elif option == "4":
-        update_contact()
-    elif option == "5":
-        delete_contact()
-    elif option == "6":
-        print("Exiting Contact Management System. Goodbye!")
-        break
+    if not st.session_state.contacts:
+        st.info("No contacts found.")
     else:
-        print("Invalid choice. Please try again.")
+        for i, contact in enumerate(st.session_state.contacts, start=1):
+            st.write(f"**{i}. {contact['name']}**")
+            st.write(f"📞 {contact['phone']}")
+            st.write(f"📧 {contact['email']}")
+            st.write(f"🏠 {contact['address']}")
+            st.divider()
+
+# ---------------- SEARCH CONTACT ----------------
+elif menu == "Search Contact":
+    st.subheader("🔍 Search Contact")
+
+    search_key = st.text_input("Enter name or phone number")
+
+    if st.button("Search"):
+        found = False
+        for contact in st.session_state.contacts:
+            if search_key.lower() in contact["name"].lower() or search_key in contact["phone"]:
+                st.success("Contact Found")
+                st.write(f"**Name:** {contact['name']}")
+                st.write(f"**Phone:** {contact['phone']}")
+                st.write(f"**Email:** {contact['email']}")
+                st.write(f"**Address:** {contact['address']}")
+                found = True
+        if not found:
+            st.error("No matching contact found")
+
+# ---------------- UPDATE CONTACT ----------------
+elif menu == "Update Contact":
+    st.subheader("✏️ Update Contact")
+
+    if not st.session_state.contacts:
+        st.info("No contacts available")
+    else:
+        names = [c["name"] for c in st.session_state.contacts]
+        selected = st.selectbox("Select Contact", names)
+
+        contact = next(c for c in st.session_state.contacts if c["name"] == selected)
+
+        new_name = st.text_input("Name", contact["name"])
+        new_phone = st.text_input("Phone", contact["phone"])
+        new_email = st.text_input("Email", contact["email"])
+        new_address = st.text_area("Address", contact["address"])
+
+        if st.button("Update"):
+            contact.update({
+                "name": new_name,
+                "phone": new_phone,
+                "email": new_email,
+                "address": new_address
+            })
+            st.success("Contact updated successfully!")
+
+# ---------------- DELETE CONTACT ----------------
+elif menu == "Delete Contact":
+    st.subheader("🗑️ Delete Contact")
+
+    if not st.session_state.contacts:
+        st.info("No contacts available")
+    else:
+        names = [c["name"] for c in st.session_state.contacts]
+        selected = st.selectbox("Select Contact to Delete", names)
+
+        if st.button("Delete"):
+            st.session_state.contacts = [
+                c for c in st.session_state.contacts if c["name"] != selected
+            ]
+            st.success("Contact deleted successfully!")
