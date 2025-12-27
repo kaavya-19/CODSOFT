@@ -1,64 +1,54 @@
 # CodSoft Python Internship Task
-# Task Name: To-Do List
+# Task Name: To-Do List (Streamlit App)
 # Author: Kaavya B M
 
+import streamlit as st
 
-todo_list = []
+# Initialize session state
+if "todo_list" not in st.session_state:
+    st.session_state.todo_list = []
 
-def show_menu():
-    print("\n--- TO-DO LIST MENU ---")
-    print("1. Add Task")
-    print("2. View Tasks")
-    print("3. Mark Task as Completed")
-    print("4. Delete Task")
-    print("5. Exit")
+st.title("📝 To-Do List Application")
 
-def add_task():
-    task = input("Enter the task: ")
-    todo_list.append({"task": task, "status": "Pending"})
-    print("Task added successfully!")
+# Add Task
+st.subheader("Add a New Task")
+new_task = st.text_input("Enter your task")
 
-def view_tasks():
-    if not todo_list:
-        print("No tasks available.")
+if st.button("Add Task"):
+    if new_task.strip():
+        st.session_state.todo_list.append(
+            {"task": new_task, "status": "Pending"}
+        )
+        st.success("Task added successfully!")
+        st.rerun()
     else:
-        print("\nYour Tasks:")
-        for i, task in enumerate(todo_list, start=1):
-            print(f"{i}. {task['task']} - {task['status']}")
+        st.warning("Please enter a task.")
 
-def mark_completed():
-    view_tasks()
-    try:
-        task_no = int(input("Enter task number to mark as completed: "))
-        todo_list[task_no - 1]["status"] = "Completed"
-        print("Task marked as completed!")
-    except:
-        print("Invalid input!")
+# View Tasks
+st.subheader("Your Tasks")
 
-def delete_task():
-    view_tasks()
-    try:
-        task_no = int(input("Enter task number to delete: "))
-        removed = todo_list.pop(task_no - 1)
-        print(f"Deleted task: {removed['task']}")
-    except:
-        print("Invalid input!")
+if not st.session_state.todo_list:
+    st.info("No tasks available.")
+else:
+    for index, task in enumerate(st.session_state.todo_list):
+        col1, col2, col3 = st.columns([4, 2, 2])
 
-# Main Program Loop
-while True:
-    show_menu()
-    choice = input("Choose an option (1-5): ")
+        col1.write(f"{index + 1}. {task['task']}")
+        col2.write(task["status"])
 
-    if choice == "1":
-        add_task()
-    elif choice == "2":
-        view_tasks()
-    elif choice == "3":
-        mark_completed()
-    elif choice == "4":
-        delete_task()
-    elif choice == "5":
-        print("Exiting To-Do List. Goodbye!")
-        break
-    else:
-        print("Invalid choice! Please try again.")
+        if col3.button("✔ Complete", key=f"complete_{index}"):
+            st.session_state.todo_list[index]["status"] = "Completed"
+            st.rerun()
+
+# Delete Task
+st.subheader("Delete a Task")
+
+if st.session_state.todo_list:
+    task_numbers = list(range(1, len(st.session_state.todo_list) + 1))
+    delete_task_no = st.selectbox("Select task number", task_numbers)
+
+    if st.button("Delete Task"):
+        removed = st.session_state.todo_list.pop(delete_task_no - 1)
+        st.success(f"Deleted task: {removed['task']}")
+        st.rerun()
+    
