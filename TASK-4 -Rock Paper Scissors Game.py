@@ -1,71 +1,63 @@
 # CodSoft Python Internship Task
-# Task Name: Rock Paper Scissors
+# Task Name: Rock Paper Scissors (Streamlit App)
 # Author: Kaavya B M
 
-
+import streamlit as st
 import random
 
+# Game choices
 choices = ["rock", "paper", "scissors"]
 
-user_score = 0
-computer_score = 0
+# Initialize session state for scores
+if "user_score" not in st.session_state:
+    st.session_state.user_score = 0
+if "computer_score" not in st.session_state:
+    st.session_state.computer_score = 0
 
-def show_instructions():
-    print("\n--- ROCK PAPER SCISSORS GAME ---")
-    print("Instructions:")
-    print("1. Type rock, paper, or scissors")
-    print("2. Rock beats Scissors")
-    print("3. Scissors beats Paper")
-    print("4. Paper beats Rock")
+# App title
+st.title("🎮 Rock Paper Scissors Game")
 
-def get_user_choice():
-    choice = input("\nEnter your choice (rock/paper/scissors): ").lower()
-    if choice in choices:
-        return choice
-    else:
-        print("Invalid choice! Please try again.")
-        return None
+# Instructions
+st.subheader("Instructions")
+st.write("""
+- Select **Rock**, **Paper**, or **Scissors**
+- Rock beats Scissors  
+- Scissors beats Paper  
+- Paper beats Rock
+""")
 
-def get_computer_choice():
-    return random.choice(choices)
+# User choice
+user_choice = st.radio("Choose your option:", choices)
 
-def decide_winner(user, computer):
-    global user_score, computer_score
+# Play button
+if st.button("Play"):
+    computer_choice = random.choice(choices)
 
-    print(f"\nYou chose: {user}")
-    print(f"Computer chose: {computer}")
+    st.write(f"**You chose:** {user_choice}")
+    st.write(f"**Computer chose:** {computer_choice}")
 
-    if user == computer:
-        print("Result: It's a tie!")
+    # Decide winner
+    if user_choice == computer_choice:
+        st.info("It's a Tie!")
     elif (
-        (user == "rock" and computer == "scissors") or
-        (user == "scissors" and computer == "paper") or
-        (user == "paper" and computer == "rock")
+        (user_choice == "rock" and computer_choice == "scissors") or
+        (user_choice == "scissors" and computer_choice == "paper") or
+        (user_choice == "paper" and computer_choice == "rock")
     ):
-        print("Result: You win this round!")
-        user_score += 1
+        st.success("You Win this round!")
+        st.session_state.user_score += 1
     else:
-        print("Result: Computer wins this round!")
-        computer_score += 1
+        st.error("Computer Wins this round!")
+        st.session_state.computer_score += 1
 
-def show_score():
-    print("\n--- SCORE BOARD ---")
-    print(f"Your Score: {user_score}")
-    print(f"Computer Score: {computer_score}")
+# Scoreboard
+st.subheader("Score Board")
+st.write(f"👤 **Your Score:** {st.session_state.user_score}")
+st.write(f"💻 **Computer Score:** {st.session_state.computer_score}")
 
-# Main Game Loop
-show_instructions()
+# Reset button
+if st.button("Reset Game"):
+    st.session_state.user_score = 0
+    st.session_state.computer_score = 0
+    st.success("Game reset successfully!")
 
-while True:
-    user_choice = get_user_choice()
-    if not user_choice:
-        continue
-
-    computer_choice = get_computer_choice()
-    decide_winner(user_choice, computer_choice)
-    show_score()
-
-    play_again = input("\nDo you want to play again? (yes/no): ").lower()
-    if play_again != "yes":
-        print("\nThanks for playing! Game Over.")
-        break
